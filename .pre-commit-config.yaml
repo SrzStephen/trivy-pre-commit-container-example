@@ -1,0 +1,24 @@
+repos:
+  - repo: local
+    hooks:
+
+      # Slow
+      - id: build-scan-image
+        name: build image for scanning
+        entry: docker build . --tag scan:latest
+        language: system
+        pass_filenames: false
+        fail_fast: true # Don't bother continuing if the image doesn't build
+
+      - id: trivy-cve-critical-high
+        name: Trivy Critical CVE scan
+        entry: trivy image --scanners vuln scan:latest --exit-code 1 --severity="CRITICAL,HIGH" --no-progress
+        language: system
+        pass_filenames: false
+
+      # Fast
+      - id: trivy-config
+        name: Trivy configuration issue
+        entry: trivy config --exit-code 1 --severity="HIGH,CRITICAL" Dockerfile
+        language: system
+        pass_filenames: false
